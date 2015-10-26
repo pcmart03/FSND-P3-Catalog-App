@@ -1,0 +1,30 @@
+{% extends 'main.html '%}
+
+{% block content %}
+<div class="row">
+  <div class="small-12 medium-9 medium-offset-1 columns">
+      
+      <div class='row'>
+        <div class="small-12 columns">
+          <h3>{{item.Item.name}}</h3>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class='small-12 medium-4 columns'>
+          <img src="{{ url_for('uploaded_photo', filename=item.Item.photo_name)}}" alt="{{ item.Photo.alt_text }}">
+        </div>
+        <div class='small-12 medium-8 columns'>
+          <p class='item-description'>
+            ${{ item.Item.price }}</br>
+            {{ item.Item.description }}
+          </p>
+          <p>
+            <a href="{{ url_for('edit_item', category_id=category_id, item_id=item_id) }}" class="button tiny round text-right">Edit</a>
+            <a href="{{ url_for('delete_item', category_id=category_id, item_id=item_id) }}" class="button tiny round text-right">Delete</a>
+          </p>
+        </div>
+      </div>
+  </div>
+</div>
+{% endblock %}

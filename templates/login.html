@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ title }}</title>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/foundation.min.css') }}">
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{url_for('static', filename='js/vendor/modernizr.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
+  <script src="//apis.google.com/js/platform.js?onload=start"> </script>
+</head>
+<body>
+ 
+  <nav class="top-bar" data-topbar role ="navigation">
+    <ul class="title-area">
+      <li class='name'>
+        <h1><a href="{{ url_for('homepage') }}">Catalog App</a></h1>
+      </li>
+      <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+    </ul>
+    <section class="top-bar-section">
+    <ul class="left">
+      <li class="divider"></li>
+    {% for c in categories %}
+      <li><a href="{{  url_for('show_category', category_id=c.id) }}">{{c.name}}</a></li>
+    {% endfor %}
+    </ul>
+
+    </section>
+  </nav>
+  <div id='result'></div>
+  <div class="row">
+    <div class="small-12 medium-4 medium-offset-1 columns" id='signInButton'>
+      <h4>Login with Google</h4>
+      <span class='g-signin'
+        data-scope="openid email"
+        data-clientid="108857884275-gmnp38f15s1orkpct3q80f2gqn5g4ep4.apps.googleusercontent.com"
+        data-redirecturi="postmessage"
+        data-accesstype="offline"
+        data-cookiepolicy='single_host_origin'
+        data-callback='signInCallback'
+        data-approvalprompt="force">
+      </span>
+    </div>
+
+  <script type="text/javascript">
+    function signInCallback(authResult) {
+      if(authResult['code']){
+        // hide sign-in button
+        $('#signInButton').attr('style', 'display: none');
+        $('#fb-sign-in').attr('style', 'display: none');
+
+        $.ajax({
+          type: 'POST',
+          url: '/gconnect?state={{STATE}}',
+          processData: false,
+          data: authResult['code'],
+          contentType: 'application/octet-stream; charset=utf-8',
+          success: function(result) {
+            if (result) {
+              $('#result').html('Login Successful</br>' + result + '</br>Redirecting...')
+              setTimeout(function() {
+                window.location.href ="/";
+              }, 4000);
+            } else if (authResult['error']) {
+              console.log('There was an error: ' + authResult['error'])
+            } else {
+            $('#result').html('Failed to make a server-side call. Check your configuration and console.')
+          }
+        }
+        });
+      }
+    }
+  </script>
+
+<!--Facebook Sign In -->
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '394758890720445',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+  function sendTokenToServer() {
+    var access_token = FB.getAuthResponse()['accessToken'];
+    console.log(access_token)
+    console.log("Welcome! Fetching your information.... ");
+    FB.api('/me', function() {
+      console.log('Successful login for: ' + response.name);
+      $.ajax({
+        type: "POST",
+        url: '/fbconnect?state={{STATE}}',
+        processData: false,
+        data: access_token,
+        contentType: 'application/octet-stream; charset=utf-8',
+        success: function(result) {
+          if (result) {
+            $('#result').html('Login Successful!</br>' + result + '</br>Redirecting...')
+            setTimeout(function() {
+              window.location.href = "/";
+            }, 4000);
+          } else {
+            $('#result').html('Failed to make a server-side call. Check your configuration and console.')
+          }
+        }
+      });
+    });
+  }
+</script>
+
+<div class="small-12 medium-4 columns end" id="fb-sign-in">
+  <h4>Login with Facebook</h4>
+  <button class="radius tiny">
+    
+    <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
+    <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
+
+    </fb:login-button>
+
+  </button>
+</div>
+  <script src="{{ url_for('static', filename='js/foundation.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/foundation/foundation.alert.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/foundation/foundation.offcanvas.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/foundation/foundation.topbar.js') }}"></script>
+  <script>
+      $(document).foundation();
+  </script>
+</body>
+</html>

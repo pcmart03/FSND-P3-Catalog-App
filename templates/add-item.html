@@ -1,0 +1,64 @@
+{% extends 'main.html '%}
+
+{% block content %}
+  <div class='row'>
+    <div class="small-12 columns">
+    <h3>Add Item to {{ category.name }}</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="small-12 medium-6 medium-offset-3 columns">
+      <form action="{{ url_for('add_item', category_id=category_id) }}" method='POST'>
+        
+        <div class="row">
+          <div class='small-12 columns'>
+            <label>
+              Name
+              <input type="text" name='name'></input>
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class='small-12 columns'>
+            <label>
+              Price
+              <input type="text" name='price'></input>
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class='small-12 columns'>
+            <label>
+              Description
+              <textarea name='description'></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class='row'>
+          <div class='small-9  columns end'>  
+            <label>
+              Image
+              <select name='photo'>
+              {% for photo in photos%}
+                <option value='{{ photo.filename }}'>{{ photo.filename }}</option>
+              {% endfor %}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class='row'>
+          <div class='small-12 columns text-right'>
+            <a href="{{ url_for('show_category', category_id=category_id) }}" class="button tiny round">Cancel</a>
+            <input type="submit" value='Create' class="button tiny round">
+          </div>
+        </div>
+      
+      </form>
+    </div>
+  </div>
+{% endblock %}

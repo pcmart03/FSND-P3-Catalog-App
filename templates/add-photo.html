@@ -1,0 +1,68 @@
+{% extends 'main.html '%}
+
+{% block content %}
+<div class='row'>
+  <div class="small-12 columns">
+    <h3>Upload New Photo</h3>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class='row'>
+      <div data-alert class="alert-box success  radius small-12 medium-6 medium-offset-3 columns">
+        <ul class="no-bullet">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+          <a href="#" class="close">&times;</a>
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
+ 
+<div class="row">
+    <div class="small-12 medium-6 medium-offset-3 columns">
+      
+      <form action="{{ url_for('upload_photo') }}" method='POST' enctype='multipart/form-data'>
+
+        <div class="row">
+          <div class="small-12 columns">
+            <label>
+              File 
+              <input type="file" name="file">
+            </label>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="small-12 columns">
+            <label>
+              Alternative Text
+              <textarea type="text" name="alt"></textarea> 
+            </label>
+          </div>
+        </div>
+      
+        <div class="row">
+          <div class="small-12 columns">
+            <select name='category'>
+              {% for c in categories %}
+              <option value='{{ c.id }}'>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+          
+        <div class="row">
+          <div class="small-12 text-right columns">
+            <input type="submit" value="Submit" class="button round">
+          </div>
+        </div>
+      
+      </form>
+    
+    </div>
+</div>
+{% endblock %}

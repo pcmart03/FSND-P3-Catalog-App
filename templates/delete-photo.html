@@ -1,0 +1,52 @@
+{% extends 'main.html '%}
+
+{% block content %}
+  <div class="row">
+    <div class="small-12 medium-9 medium-offset-1 columns">
+      <h3>Delete Photo</h3>
+    </div>
+  </div>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class='row'>
+      <div data-alert class="alert-box success  radius small-6">
+        <ul class="no-bullet">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+          <a href="#" class="close">&times;</a>
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
+
+  <div class="row">
+    <div class="small-12 medium-6 medium-offest-1 columns">
+      <form action="{{ url_for('delete_photo') }}" method='POST'>
+        
+        <div class='row'>
+          <div class='small-12  columns'>  
+            <label>
+              Which image would you like to delete?
+              <select name='photo'>
+              {% for photo in photos%}
+                <option value='{{ photo.filename }}'>{{ photo.filename }}</option>
+              {% endfor %}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class='row'>
+          <div class="small-12">
+            <a href="{{ url_for('homepage') }}" class="button tiny round">Cancel</a>
+            <input type="submit" value="Delete" class="button tiny round alert">
+          </div>
+        </div>
+      
+      </form>
+    </div>      
+  </div>
+{% endblock %}

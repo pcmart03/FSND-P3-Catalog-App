@@ -1,0 +1,39 @@
+{% extends 'main.html '%}
+
+{% block content %}
+<div class='row'>
+  <div class="medium-12 columns">
+      <h3>New Items</h3>
+  </div>
+</div>
+ 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class='row'>
+      <div data-alert class="alert-box success  radius small-6">
+        <ul class="no-bullet">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+        <a href="#" class="close">&times;</a>
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
+
+
+<div class='row'>
+  <div class='small-12 medium-9 medium-offset-1 columns'>
+    <ul class='small-block-grid-1 medium-block-grid-4'>
+      {% for item in items %}
+        <li>
+          <a href="{{ url_for('show_item', category_id=item.Item.category_id, item_id=item.Item.id) }}" class='th'><img src="{{url_for('uploaded_photo', filename=item.Item.photo_name)}}" alt="{{ item.Photo.alt_text }}"></a>
+          </br>
+          <a href="{{ url_for('show_item', category_id=item.Item.category_id, item_id=item.Item.id) }}"><strong>{{ item.Item.name }}</strong></a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
