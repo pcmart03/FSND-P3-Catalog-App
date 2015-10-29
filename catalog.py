@@ -110,7 +110,6 @@ def get_user_id(email):
     except:
         return None
 
-
 def is_logged_in():
     if 'user_id' in login_session:
         return True
@@ -437,6 +436,7 @@ def delete_photo():
     categories = get_categories()
     if request.method == 'POST':
         filename = request.form['photo']
+        # check to make sure it is safe to delete photos
         if image_in_use(filename):
             flash("Image is being used by an active item.")
             return redirect(url_for('delete_photo'))
