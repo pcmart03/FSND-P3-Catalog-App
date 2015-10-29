@@ -17,6 +17,7 @@
     </ul>
     <section class="top-bar-section">
       <ul class="right">
+      {% if user %}
         <li class="has-dropdown">
           <a href="#">Manage Photos</a>
           <ul class='dropdown'>
@@ -24,7 +25,17 @@
             <li><a href="{{ url_for('delete_photo') }}">Delete Photo</a></li>
           </ul>
         </li>
-        <li class=""><a href="{{ url_for('login')}}" class="button alert round">Login</a></li>
+        <li class='name'>
+          <a href="#">{{ user }}</a> <!--TODO: Create profile page-->
+        </li>
+        <li>
+          <a href="{{ url_for('logout')}}" class="button alert round">Logout</a>
+        </li>
+        {% else %}
+        <li>
+          <a href="{{ url_for('login')}}" class="button alert round">Login</a>
+        </li>
+        {% endif %}
       </ul>
     <ul class="left">
       <li class="divider"></li>

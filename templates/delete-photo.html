@@ -32,7 +32,9 @@
               Which image would you like to delete?
               <select name='photo'>
               {% for photo in photos%}
+                {% if photo.user_id == user_id%}
                 <option value='{{ photo.filename }}'>{{ photo.filename }}</option>
+                {% endif %}
               {% endfor %}
               </select>
             </label>

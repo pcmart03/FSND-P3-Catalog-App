@@ -66,7 +66,7 @@ def item_join():
 
 # returns item from joined table
 def get_display_item(item_id):
-    return item_join().filter_by(id=item_id).one()
+    return item_join().filter(Item.id == item_id).one()
 
 
 # queries the item table directly for updating
@@ -82,7 +82,7 @@ def allowed_file(filename):
 
 # check items to see if image is active.
 def image_in_use(filename):
-    items_with_image = session.query(Item).filter_by(photo_name=filename).all()
+    items_with_image = session.query(Item).filter_by(photo_name=filename)
     if items_with_image:
         return True
 
@@ -111,17 +111,20 @@ def get_user_id(email):
         return None
 
 
-# Views
-@app.route('/index.html')
-@app.route('/')
-def homepage():
-    page_title = 'Catalog App'
-    categories = get_categories()
-    items = item_join().order_by(desc('Item.id')).limit(8)
-    return render_template('homepage.html', categories=categories,
-                           title=page_title, items=items)
+def is_logged_in():
+    if 'user_id' in login_session:
+        return True
+    else:
+        return False
 
 
+# gets user id of item or photo creator. Table can be either Photo or Item.
+def get_creator(item_id):
+    item = session.query(Item).filter_by(id=item_id).one()
+    return item.user_id
+
+
+# Oauth views
 @app.route('/login')
 def login():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -155,7 +158,7 @@ def fbconnect():
     url = 'https://graph.facebook.com/v2.4/me?%s&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-    
+
     data = json.loads(result)
     login_session['provider'] = 'facebook'
     login_session['username'] = data["name"]
@@ -197,7 +200,8 @@ def fbdisconnect():
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id, access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
+        facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -344,50 +348,91 @@ def logout():
         return redirect(url_for('homepage'))
 
 
+# Begin Catalog views
+@app.route('/index.html')
+@app.route('/')
+def homepage():
+    page_title = 'Catalog App'
+    categories = get_categories()
+    if is_logged_in():
+        user = login_session['username']
+    else:
+        user = None
+    items = item_join().order_by(desc('Item.id')).limit(8)
+    return render_template('homepage.html', categories=categories,
+                           title=page_title, items=items, user=user)
+
+
 @app.route('/<int:category_id>/')
 def show_category(category_id):
+    if is_logged_in():
+        user = login_session['username']
+    else:
+        user = None
     categories = get_categories()
     category = get_category(category_id)
     page_title = category.name
     items = item_join().filter_by(category_id=category_id).all()
     return render_template('category-page.html', category_id=category_id,
-                           category=category, categories=categories,
-                           title=page_title, items=items)
+                           user=user, title=page_title, items=items,
+                           category=category, categories=categories)
 
 
+# Begin Photo Views
 @app.route('/upload-photo/', methods=['GET', 'POST'])
 def upload_photo():
     page_title = "Upload Photo"
     categories = get_categories()
-
-    if request.method == 'POST':
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            alt = request.form['alt']
-            category = request.form['category']
-            new_photo = Photo(filename=filename, alt_text=alt,
-                              category_id=category)
-            session.add(new_photo)
-            session.commit()
-            flash('Photo saved')
-            return redirect(url_for('homepage'))
-        else:
-            flash("Invalid file type")
-            return redirect(url_for('upload_photo'))
+    if 'username' not in login_session:
+        flash("You must be logged in to upload photos")
+        return redirect(url_for('login'))
     else:
-        return render_template('add-photo.html', categories=categories,
-                               title=page_title)
+        user = login_session['username']
+        if request.method == 'POST':
+            file = request.files['file']
+            # validate file type is allowed
+            if file and allowed_file(file.filename):
+                # sanitize file name
+                filename = secure_filename(file.filename)
+                # check to make sure the file name is unique
+                existing_file = session.query(Photo).filter_by(
+                    filename=filename).all()
+                if existing_file:
+                    flash("A file with that name already exists")
+                    return redirect(url_for('upload_photo'))
+                else:
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                              filename))
+                    alt = request.form['alt']
+                    category = request.form['category']
+                    new_photo = Photo(filename=filename, alt_text=alt,
+                                      category_id=category,
+                                      user_id=login_session['user_id'])
+                    session.add(new_photo)
+                    session.commit()
+                    flash('Photo saved')
+                    return redirect(url_for('homepage'))
+            else:
+                flash("Invalid file type")
+                return redirect(url_for('upload_photo'))
+        else:
+            return render_template('add-photo.html', categories=categories,
+                                   title=page_title, user=user)
 
 
 @app.route('/uploads/<filename>')
 def uploaded_photo(filename):
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 @app.route('/delete-photo', methods=['GET', 'POST'])
 def delete_photo():
+    if 'username' not in login_session:
+        flash("You must be logged in to delete photos")
+        return redirect(url_for('login'))
+    page_title = "Delete Photos"
+    user_id = login_session['user_id']
+    user = login_session['username']
     images = session.query(Photo).all()
     categories = get_categories()
     if request.method == 'POST':
@@ -405,32 +450,49 @@ def delete_photo():
             flash('Image deleted')
             return redirect(url_for('homepage'))
     else:
+        # template should only show photos uploaded by user for deletion.
         return render_template('delete-photo.html', categories=categories,
-                               photos=images)
+                               photos=images, user=user, user_id=user_id,
+                               title=page_title)
 
 
 @app.route('/<int:category_id>/<int:item_id>/')
 def show_item(category_id, item_id):
+    if is_logged_in():
+        user = login_session['username']
+        user_id = login_session['user_id']
+    else:
+        user = None
+        user_id = None
     item = get_display_item(item_id)
     categories = get_categories()
     return render_template('show-item.html', category_id=category_id,
                            item_id=item_id, title=item.Item.name,
-                           categories=categories, item=item)
+                           categories=categories, item=item, user=user,
+                           user_id=user_id)
 
 
 @app.route('/<int:category_id>/add-item/', methods=['GET', 'POST'])
 def add_item(category_id):
+    if 'username' not in login_session:
+        flash("You must be logged in to create new items")
+        return redirect(url_for('show_category', category_id=category_id))
+
+    user = login_session['username']
+    user_id = login_session['user_id']
     page_title = 'Add New Item'
     categories = get_categories()
     category = get_category(category_id)
     images = get_images(category_id)
+
     if request.method == 'POST':
         name = request.form['name']
         price = request.form['price']
         image = request.form['photo']
         description = request.form['description']
         new_item = Item(name=name, description=description, price=price,
-                        category_id=category_id, photo_name=image)
+                        category_id=category_id, photo_name=image,
+                        user_id=user_id)
         session.add(new_item)
         session.commit()
         flash('Item added')
@@ -438,11 +500,24 @@ def add_item(category_id):
     else:
         return render_template('add-item.html', category_id=category_id,
                                category=category, categories=categories,
-                               photos=images, title=page_title)
+                               photos=images, title=page_title, user=user)
 
 
 @app.route('/<int:category_id>/<int:item_id>/edit/', methods=['GET', 'POST'])
 def edit_item(category_id, item_id):
+    # check that user is logged in
+    if 'username' not in login_session:
+        flash("You must be logged in to edit items")
+        return redirect(url_for('show_category', category_id=category_id))
+
+    user_id = login_session['user_id']
+    user = login_session['username']
+    item_creator = get_creator(item_id)
+
+    # check that user is the creator
+    if user_id != item_creator:
+        flash('You are not authorized to edit this item')
+        return redirect(url_for('show_category', category_id=category_id))
     edited_item = get_item(item_id)
     categories = get_categories()
     photos = get_images(category_id)
@@ -458,13 +533,25 @@ def edit_item(category_id, item_id):
     else:
         return render_template('edit-item.html', category_id=category_id,
                                item_id=item_id, item=edited_item,
-                               categories=categories, photos=photos)
+                               categories=categories, photos=photos, user=user)
 
 
 @app.route('/<int:category_id>/<int:item_id>/delete/', methods=['GET', 'POST'])
 def delete_item(category_id, item_id):
+    if 'username' not in login_session:
+        flash("You must be logged in to create new items")
+
+    user_id = login_session['user_id']
+    user = login_session['username']
+    item_creator = get_creator(item_id)
+
+    if user_id != item_creator:
+        flash('You are not authorized to delete this item')
+        return redirect(url_for('show_category', category_id=category_id))
+
     deleted_item = get_item(item_id)
     categories = get_categories()
+
     if request.method == 'POST':
         session.delete(deleted_item)
         session.commit()
@@ -473,11 +560,10 @@ def delete_item(category_id, item_id):
     else:
         return render_template('delete-item.html', category_id=category_id,
                                item_id=item_id, item=deleted_item,
-                               categories=categories)
+                               categories=categories, user=user)
 
 
 # API End Points
-# JSON
 @app.route('/category/JSON')
 def all_categories_json():
     categories = get_categories()
