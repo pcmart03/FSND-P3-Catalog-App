@@ -6,7 +6,7 @@ This is an application for creating and maintaining an item catalog. Users can l
 
 ###Prerequisites
 - Python
-- Flask
+- Flask v0.9
 - Sqlalchemy
 - Sqlite
 
