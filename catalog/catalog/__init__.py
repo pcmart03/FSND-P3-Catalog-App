@@ -20,7 +20,7 @@ import httplib2
 import json
 import requests
 
-UPLOAD_FOLDER = 'uploads/'
+UPLOAD_FOLDER = 'var/www/FSND-P3-Catalog-App/catalog/catalog/uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif'])
 
 
@@ -331,7 +331,7 @@ def logout():
     if 'provider' in login_session:
         if login_session['provider'] == 'google':
             gdisconnect()
-            del login_session['gplus_id']
+            # del login_session['gplus_id']
             del login_session['credentials']
         if login_session['provider'] == 'facebook':
             fbdisconnect()
