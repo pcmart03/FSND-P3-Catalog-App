@@ -28,7 +28,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 CLIENT_ID = json.loads(
-    open('google-client-secrets.json', 'r').read())['web']['client_id']
+    open('/var/www/FSND-P3-Catalog-App/catalog/catalog/google-client-secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog App"
 
 
