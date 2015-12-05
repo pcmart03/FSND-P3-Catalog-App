@@ -217,7 +217,7 @@ def gconnect():
     code = request.data
 
     try:
-        oauth_flow = flow_from_clientsecrets('google-client-secrets.json',
+        oauth_flow = flow_from_clientsecrets('/var/www/FSND-P3-Catalog-App/catalog/catalog/google-client-secrets.json',
                                              scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
