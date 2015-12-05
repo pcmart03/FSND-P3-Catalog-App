@@ -29,7 +29,7 @@ class Category(Base):
 
 class Photo(Base):
     __tablename__ = "photo"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, unique=True)
     filename = Column(String(250), nullable=False)
     alt_text = Column(String(120), nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'))
