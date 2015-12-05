@@ -28,7 +28,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 CLIENT_ID = json.loads(
-    open('/var/www/FSND-P3-Catalog-App/catalog/catalog/google-client-secrets.json', 'r').read())['web']['client_id']
+    open(r'/var/www/FSND-P3-Catalog-App/catalog/catalog/google-client-secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog App"
 
 
@@ -217,7 +217,7 @@ def gconnect():
     code = request.data
 
     try:
-        oauth_flow = flow_from_clientsecrets('/var/www/FSND-P3-Catalog-App/catalog/catalog/google-client-secrets.json',
+        oauth_flow = flow_from_clientsecrets(r'/var/www/FSND-P3-Catalog-App/catalog/catalog/google-client-secrets.json',
                                              scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
