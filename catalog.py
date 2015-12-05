@@ -32,7 +32,7 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME = "Catalog App"
 
 
-engine = create_engine('postgressql+psycopg2://catalog:catalog@localhost/catalog')
+engine = create_engine('postgressql://catalog:catalog1@localhost/catalog')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
