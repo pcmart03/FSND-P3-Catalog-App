@@ -20,7 +20,7 @@ import httplib2
 import json
 import requests
 
-UPLOAD_FOLDER = '/media/'
+UPLOAD_FOLDER = '/var/www/FSND-P3-Catalog-App/catalog/catalog/uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif'])
 
 
