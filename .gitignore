@@ -1,6 +1,6 @@
 # project files
 google-client-secrets.json
-facebook-client-secrets.json
+fb-client-secrets.json
 
 # Windows image file caches
 Thumbs.db
