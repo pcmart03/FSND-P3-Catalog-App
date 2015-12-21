@@ -10,7 +10,7 @@ A working demo of the app is [available here](http://ec2-52-26-24-122.us-west-2.
 - Python
 - Flask v0.9
 - Sqlalchemy
-- Sqlite
+- Sqlite or Postgresql
 
 ###To Install
 Clone or download the repository and cd into the directory.
