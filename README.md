@@ -2,7 +2,7 @@
 
 This is an application for creating and maintaining an item catalog. Users can log in with either Google+ or Facebook to log into the app and create new items.  
 
-A working demo of the app is [available here](http://ec2-52-26-24-122.us-west-2.compute.amazonaws.com/).
+<!-- A working demo of the app is [available here](http://ec2-52-26-24-122.us-west-2.compute.amazonaws.com/). -->
 
 ##Running the App
 
